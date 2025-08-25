@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Vote } from '../types';
+import { User, Vote, UserStatus } from '../types';
 import './UserList.css';
 
 interface UserListProps {
@@ -12,6 +12,36 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
   const getUserVote = (userId: string) => {
     const vote = votes.find(v => v.userId === userId);
     return vote;
+  };
+
+  const getStatusIcon = (status?: UserStatus) => {
+    switch (status) {
+      case 'active':
+        return '✅';
+      case 'coffee':
+        return '☕';
+      case 'watch':
+        return '👀';
+      case 'right-back':
+        return '🚶';
+      default:
+        return '✅';
+    }
+  };
+
+  const getStatusLabel = (status?: UserStatus) => {
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'coffee':
+        return 'Coffee Break';
+      case 'watch':
+        return 'Just Watching';
+      case 'right-back':
+        return 'Be Right Back';
+      default:
+        return 'Active';
+    }
   };
 
   const votedCount = votes.length;
@@ -30,8 +60,11 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
           const vote = getUserVote(user.id);
           const isOwnUser = vote?.isOwnVote || false;
           return (
-            <div key={user.id} className={`user-item ${isOwnUser ? 'own-user' : ''}`}>
+            <div key={user.id} className={`user-item ${isOwnUser ? 'own-user' : ''} ${user.status !== 'active' ? 'status-' + user.status : ''}`}>
               <div className="user-info">
+                <span className="user-status-icon" title={getStatusLabel(user.status)}>
+                  {getStatusIcon(user.status)}
+                </span>
                 <span className="user-name">
                   {user.isHost && '👑 '}{isOwnUser && '👤 '}{user.name}{isOwnUser && ' (You)'}{user.isHost && ' (Host)'}
                 </span>

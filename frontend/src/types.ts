@@ -1,8 +1,11 @@
+export type UserStatus = 'active' | 'coffee' | 'watch' | 'right-back';
+
 export interface User {
   id: string;
   name: string;
   isObserver: boolean;
   isHost?: boolean;
+  status?: UserStatus;
 }
 
 export interface Vote {

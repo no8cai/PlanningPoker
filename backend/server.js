@@ -36,7 +36,7 @@ class Room {
   }
 
   addUser(userId, userName) {
-    this.users.set(userId, { id: userId, name: userName, isObserver: false });
+    this.users.set(userId, { id: userId, name: userName, isObserver: false, status: 'active' });
     this.votes.delete(userId);
     
     // Set first user as host
@@ -296,6 +296,22 @@ io.on('connection', (socket) => {
     
     const emojiData = currentRoom.addEmoji(emoji, socket.id, userName);
     io.to(currentRoom.id).emit('emoji-received', emojiData);
+  });
+
+  socket.on('update-status', ({ status }) => {
+    if (!currentRoom) return;
+    
+    const user = currentRoom.users.get(socket.id);
+    if (user) {
+      user.status = status;
+      
+      // Send personalized room state to each client
+      for (const [clientId, client] of io.sockets.sockets) {
+        if (currentRoom.users.has(clientId)) {
+          client.emit('room-update', currentRoom.getState(clientId));
+        }
+      }
+    }
   });
 
   socket.on('transfer-host', ({ newHostId }) => {

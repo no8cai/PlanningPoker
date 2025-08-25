@@ -110,11 +110,38 @@
   box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
 }
 
+.user-item.status-coffee {
+  opacity: 0.7;
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.1), rgba(160, 82, 45, 0.1));
+}
+
+.user-item.status-watch {
+  opacity: 0.7;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(129, 199, 132, 0.1));
+}
+
+.user-item.status-right-back {
+  opacity: 0.7;
+  background: linear-gradient(135deg, rgba(255, 152, 0, 0.1), rgba(255, 183, 77, 0.1));
+}
+
 .user-info {
   display: flex;
   align-items: center;
   gap: 8px;
   flex: 1;
+}
+
+.user-status-icon {
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .user-name {

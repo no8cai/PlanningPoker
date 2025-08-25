@@ -6,7 +6,8 @@ import UserList from './UserList';
 import EmojiPicker from './EmojiPicker';
 import FloatingEmoji from './FloatingEmoji';
 import ShareButton from './ShareButton';
-import { Room } from '../types';
+import StatusSelector from './StatusSelector';
+import { Room, UserStatus } from '../types';
 import { SOCKET_URL } from '../config';
 import './RoomPage.css';
 
@@ -27,6 +28,7 @@ const RoomPage: React.FC = () => {
   const [showHostTransferModal, setShowHostTransferModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState(3);
+  const [userStatus, setUserStatus] = useState<UserStatus>('active');
   const previousRevealedRef = useRef(false);
 
   useEffect(() => {
@@ -151,6 +153,13 @@ const RoomPage: React.FC = () => {
     }
   };
 
+  const handleStatusChange = (status: UserStatus) => {
+    if (socket) {
+      setUserStatus(status);
+      socket.emit('update-status', { status });
+    }
+  };
+
   const handleLeaveRoom = () => {
     if (room?.isHost && room.users.length > 1) {
       setShowHostTransferModal(true);
@@ -256,6 +265,10 @@ const RoomPage: React.FC = () => {
 
         <div className="room-content">
           <div className="main-area">
+            <StatusSelector 
+              currentStatus={userStatus} 
+              onStatusChange={handleStatusChange}
+            />
             <div className="story-section">
               {room.isHost ? (
                 <div className="story-input-group">
