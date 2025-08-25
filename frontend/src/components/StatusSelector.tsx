@@ -9,7 +9,7 @@ interface StatusSelectorProps {
 
 const StatusSelector: React.FC<StatusSelectorProps> = ({ currentStatus, onStatusChange }) => {
   const statuses: { value: UserStatus; label: string; icon: string }[] = [
-    { value: 'active', label: 'Active', icon: '✅' },
+    { value: 'active', label: 'Active', icon: '🟢' },
     { value: 'coffee', label: 'Coffee Break', icon: '☕' },
     { value: 'watch', label: 'Just Watching', icon: '👀' },
     { value: 'right-back', label: 'Be Right Back', icon: '🚶' },
@@ -17,7 +17,6 @@ const StatusSelector: React.FC<StatusSelectorProps> = ({ currentStatus, onStatus
 
   return (
     <div className="status-selector">
-      <div className="status-label">Your Status:</div>
       <div className="status-options">
         {statuses.map((status) => (
           <button

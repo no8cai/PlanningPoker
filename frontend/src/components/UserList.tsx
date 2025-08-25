@@ -17,7 +17,7 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
   const getStatusIcon = (status?: UserStatus) => {
     switch (status) {
       case 'active':
-        return '✅';
+        return '🟢';
       case 'coffee':
         return '☕';
       case 'watch':
@@ -25,7 +25,7 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
       case 'right-back':
         return '🚶';
       default:
-        return '✅';
+        return '🟢';
     }
   };
 
