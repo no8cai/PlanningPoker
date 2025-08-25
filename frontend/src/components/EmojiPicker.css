@@ -124,7 +124,7 @@
 
 .emoji-picker-popup {
   position: absolute;
-  bottom: 60px;
+  top: 60px;
   right: 0;
   background: white;
   border-radius: 12px;
