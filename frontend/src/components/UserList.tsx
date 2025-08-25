@@ -14,9 +14,17 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
     return vote;
   };
 
+  const votedCount = votes.length;
+  const totalUsers = users.filter(u => !u.isObserver).length;
+
   return (
     <div className="user-list">
-      <h3>Participants</h3>
+      <div className="participants-header">
+        <h3>Participants</h3>
+        {totalUsers > 0 && (
+          <span className="vote-count">({votedCount} of {totalUsers} voted)</span>
+        )}
+      </div>
       <div className="users">
         {users.map(user => {
           const vote = getUserVote(user.id);
@@ -39,7 +47,7 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
                     ) : revealed ? (
                       vote.value
                     ) : (
-                      '✓'
+                      <span className="vote-checkmark">✓</span>
                     )}
                   </span>
                 ) : (

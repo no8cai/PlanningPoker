@@ -260,7 +260,7 @@ const RoomPage: React.FC = () => {
                 />
               ))}
             </div>
-            {selectedCard && (
+            {/* {selectedCard && (
               <div className="vote-selection">
                 <div className="my-vote-display">
                   <span className="my-vote-label">Your Vote:</span>
@@ -270,7 +270,7 @@ const RoomPage: React.FC = () => {
                   Clear Vote
                 </button>
               </div>
-            )}
+            )} */}
           </div>
 
           <div className="controls">
