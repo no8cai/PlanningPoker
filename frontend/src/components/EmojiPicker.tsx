@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import './EmojiPicker.css';
 
 interface EmojiPickerProps {
@@ -15,6 +15,23 @@ const EMOJI_LIST = [
 const EmojiPicker: React.FC<EmojiPickerProps> = ({ onEmojiSelect }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [recentEmojis, setRecentEmojis] = useState<string[]>(['👍', '🎉', '😊', '🔥']);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
 
   const handleEmojiClick = (emoji: string) => {
     try {
@@ -42,7 +59,7 @@ const EmojiPicker: React.FC<EmojiPickerProps> = ({ onEmojiSelect }) => {
   };
 
   return (
-    <div className="emoji-picker-container">
+    <div className="emoji-picker-container" ref={containerRef}>
       <div className="quick-emojis">
         {recentEmojis.map((emoji, index) => (
           <button
