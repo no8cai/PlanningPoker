@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#4A90E2"/>
+  
+  <!-- Card Stack -->
+  <!-- Back card -->
+  <rect x="180" y="140" width="120" height="170" rx="8" fill="#2C3E50" transform="rotate(-15 240 225)"/>
+  
+  <!-- Middle card -->
+  <rect x="196" y="156" width="120" height="170" rx="8" fill="#34495E" transform="rotate(-7 256 241)"/>
+  
+  <!-- Front card -->
+  <rect x="212" y="171" width="120" height="170" rx="8" fill="#FFFFFF" stroke="#2C3E50" stroke-width="2"/>
+  
+  <!-- Card content -->
+  <text x="272" y="256" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="#E74C3C">8</text>
+  
+  <!-- Small suit symbols -->
+  <text x="228" y="200" font-family="Arial, sans-serif" font-size="24" fill="#E74C3C">♠</text>
+  <text x="316" y="322" font-family="Arial, sans-serif" font-size="24" fill="#E74C3C">♠</text>
+</svg>

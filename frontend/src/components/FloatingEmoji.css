@@ -1,0 +1,77 @@
+@keyframes floatUp {
+  0% {
+    transform: translateY(var(--start-y)) scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    transform: translateY(calc(var(--start-y) - 10%)) scale(1.2) rotate(20deg);
+    opacity: 1;
+  }
+  30% {
+    transform: translateY(calc(var(--start-y) - 30%)) scale(1) rotate(-10deg);
+  }
+  50% {
+    transform: translateY(calc(var(--start-y) - 50%)) scale(1.1) rotate(15deg);
+  }
+  70% {
+    transform: translateY(calc(var(--start-y) - 70%)) scale(1) rotate(-5deg);
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--end-y)) scale(0.8) rotate(0deg);
+    opacity: 0;
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-10px);
+  }
+  75% {
+    transform: translateX(10px);
+  }
+}
+
+.floating-emoji {
+  position: fixed;
+  z-index: 9999;
+  animation: 
+    floatUp 4s ease-out forwards,
+    wiggle 2s ease-in-out infinite;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.emoji-symbol {
+  font-size: 48px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.emoji-username {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  white-space: nowrap;
+}

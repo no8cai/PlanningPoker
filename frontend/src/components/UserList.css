@@ -1,0 +1,231 @@
+@keyframes userJoin {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.user-list {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.user-list h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  background: white;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.users {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s;
+  animation: userJoin 0.4s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.user-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.user-item:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.user-item:hover::before {
+  left: 100%;
+}
+
+.user-item.own-user {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.user-name {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+.own-user .user-name {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.observer-badge {
+  padding: 3px 8px;
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.vote-status {
+  display: flex;
+  align-items: center;
+}
+
+.vote-value {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.vote-value.hidden {
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.vote-value.revealed {
+  background: linear-gradient(135deg, rgba(56, 239, 125, 0.2), rgba(17, 153, 142, 0.2));
+  color: #38ef7d;
+  border: 1px solid rgba(56, 239, 125, 0.3);
+  font-size: 18px;
+  text-shadow: 0 0 10px rgba(56, 239, 125, 0.5);
+}
+
+.vote-value.own-vote {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+  color: #ffffff;
+  border: 1px solid rgba(102, 126, 234, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.own-vote-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.no-vote {
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Animations for vote reveals */
+@keyframes voteReveal {
+  0% {
+    transform: rotateY(90deg);
+    opacity: 0;
+  }
+  50% {
+    transform: rotateY(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.1) rotateY(0deg);
+    opacity: 1;
+  }
+}
+
+.vote-value.revealed {
+  animation: voteReveal 0.5s ease-out;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .user-list {
+    padding: 12px;
+    position: static;
+    margin-bottom: 12px;
+  }
+  
+  .user-list h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .user-item {
+    padding: 6px 10px;
+  }
+  
+  .user-name {
+    font-size: 12px;
+  }
+  
+  .vote-value {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+  
+  .no-vote {
+    font-size: 12px;
+    padding: 3px 6px;
+  }
+}
