@@ -344,27 +344,30 @@ io.on('connection', (socket) => {
     
     if (currentRoom) {
       const wasHost = currentRoom.hostId === socket.id;
+      const roomId = currentRoom.id;
       currentRoom.removeUser(socket.id);
       
-      // Notify about user leaving
-      socket.to(currentRoom.id).emit('user-left', { 
-        userId: socket.id, 
-        name: userName,
-        wasHost: wasHost,
-        newHostId: currentRoom.hostId
-      });
-      
-      // Send personalized room state to remaining clients
-      for (const [clientId, client] of io.sockets.sockets) {
-        if (currentRoom.users.has(clientId)) {
-          client.emit('room-update', currentRoom.getState(clientId));
-        }
-      }
-      
-      // Close room if no users remain
+      // Check if room should be deleted before sending updates
       if (currentRoom.users.size === 0) {
-        rooms.delete(currentRoom.id);
-        console.log(`Room ${currentRoom.id} closed - no users remaining`);
+        // Delete the room immediately when empty
+        rooms.delete(roomId);
+        console.log(`Room ${roomId} closed - no users remaining`);
+      } else {
+        // Only send updates if room still has users
+        // Notify about user leaving
+        socket.to(roomId).emit('user-left', { 
+          userId: socket.id, 
+          name: userName,
+          wasHost: wasHost,
+          newHostId: currentRoom.hostId
+        });
+        
+        // Send personalized room state to remaining clients
+        for (const [clientId, client] of io.sockets.sockets) {
+          if (currentRoom.users.has(clientId)) {
+            client.emit('room-update', currentRoom.getState(clientId));
+          }
+        }
       }
     }
   });
