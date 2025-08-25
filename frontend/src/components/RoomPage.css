@@ -120,6 +120,45 @@
   background: rgba(102, 126, 234, 0.2);
   border-radius: 8px;
   border: 1px solid rgba(102, 126, 234, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.access-code-display:hover {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: rgba(102, 126, 234, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.copy-icon {
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.copy-icon.success {
+  color: #27ae60;
+  opacity: 1;
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.access-code-display:hover .copy-icon {
+  opacity: 1;
 }
 
 .code-label {
@@ -726,6 +765,15 @@
     gap: 10px;
   }
 
+  .copy-share-button {
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+  
+  .copy-share-text {
+    display: none;
+  }
+
   .leave-button {
     padding: 8px 16px;
     font-size: 12px;
@@ -1161,6 +1209,35 @@
   box-shadow: 0 6px 20px rgba(238, 9, 121, 0.6);
 }
 
+.copy-share-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #00bcd4, #00acc1);
+  color: white;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3);
+}
+
+.copy-share-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 188, 212, 0.4);
+}
+
+.copy-share-button:active {
+  transform: scale(0.95);
+}
+
+.copy-share-text {
+  white-space: nowrap;
+}
+
 .transfer-host-button {
   padding: 8px 16px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -1177,6 +1254,42 @@
 .transfer-host-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.copy-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  background: linear-gradient(135deg, #27ae60, #229954);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 20px rgba(39, 174, 96, 0.4);
+  z-index: 10000;
+  animation: toast 2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes toast {
+  0% {
+    transform: translate(-50%, 20px);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  80% {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -20px);
+    opacity: 0;
+  }
 }
 
 /* Confetti Animation */

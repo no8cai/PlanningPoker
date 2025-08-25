@@ -29,6 +29,8 @@ const RoomPage: React.FC = () => {
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState(3);
   const [userStatus, setUserStatus] = useState<UserStatus>('active');
+  const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
+  const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const previousRevealedRef = useRef(false);
 
   useEffect(() => {
@@ -168,6 +170,52 @@ const RoomPage: React.FC = () => {
     }
   };
 
+  const handleCopyShareLink = async () => {
+    if (roomId && room?.accessCode) {
+      try {
+        const shareUrl = `${window.location.origin}/room/${roomId}?code=${room.accessCode}`;
+        await navigator.clipboard.writeText(shareUrl);
+        setCopyLinkFeedback(true);
+        setTimeout(() => setCopyLinkFeedback(false), 2000);
+      } catch (err) {
+        // Fallback for mobile devices
+        const textArea = document.createElement('textarea');
+        const shareUrl = `${window.location.origin}/room/${roomId}?code=${room.accessCode}`;
+        textArea.value = shareUrl;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setCopyLinkFeedback(true);
+        setTimeout(() => setCopyLinkFeedback(false), 2000);
+      }
+    }
+  };
+
+  const handleCopyAccessCode = async () => {
+    if (room?.accessCode) {
+      try {
+        await navigator.clipboard.writeText(room.accessCode);
+        setCopyCodeFeedback(true);
+        setTimeout(() => setCopyCodeFeedback(false), 2000);
+      } catch (err) {
+        // Fallback for mobile devices
+        const textArea = document.createElement('textarea');
+        textArea.value = room.accessCode;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        setCopyCodeFeedback(true);
+        setTimeout(() => setCopyCodeFeedback(false), 2000);
+      }
+    }
+  };
+
   if (!isJoined) {
     return (
       <div className="join-container">
@@ -240,13 +288,39 @@ const RoomPage: React.FC = () => {
           <div className="room-header-info">
             <h1 className="room-title">{room.name}</h1>
             {room.isHost && room.accessCode && (
-              <div className="access-code-display">
+              <div className="access-code-display" onClick={handleCopyAccessCode} title="Click to copy access code">
                 <span className="code-label">Access Code:</span>
                 <span className="code-value">{room.accessCode}</span>
+                {copyCodeFeedback ? (
+                  <svg className="copy-icon success" viewBox="0 0 24 24" width="12" height="12">
+                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                ) : (
+                  <svg className="copy-icon" viewBox="0 0 24 24" width="12" height="12">
+                    <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                  </svg>
+                )}
               </div>
             )}
           </div>
           <div className="header-actions">
+            <button className="copy-share-button" onClick={handleCopyShareLink} title="Copy share link">
+              {copyLinkFeedback ? (
+                <>
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  <span className="copy-share-text">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <svg viewBox="0 0 24 24" width="16" height="16">
+                    <path fill="currentColor" d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                  </svg>
+                  <span className="copy-share-text">Copy Link</span>
+                </>
+              )}
+            </button>
             <ShareButton roomId={roomId || ''} roomName={room.name} accessCode={room.accessCode} />
             <EmojiPicker onEmojiSelect={handleEmojiSelect} />
             {room.isHost && room.users.length > 1 && (
@@ -428,6 +502,9 @@ const RoomPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Copy Link Toast */}
+      {copyLinkFeedback && <div className="copy-toast">Link copied to clipboard!</div>}
     </div>
   );
 };
