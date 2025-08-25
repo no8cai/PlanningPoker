@@ -265,10 +265,6 @@ const RoomPage: React.FC = () => {
 
         <div className="room-content">
           <div className="main-area">
-            <StatusSelector 
-              currentStatus={userStatus} 
-              onStatusChange={handleStatusChange}
-            />
             <div className="story-section">
               {room.isHost ? (
                 <div className="story-input-group">
@@ -389,6 +385,10 @@ const RoomPage: React.FC = () => {
           </div>
 
           <div className="sidebar">
+            <StatusSelector 
+              currentStatus={userStatus} 
+              onStatusChange={handleStatusChange}
+            />
             <UserList 
               users={room.users}
               votes={room.votes}
