@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import io, { Socket } from 'socket.io-client';
 import VotingCard from './VotingCard';
@@ -25,6 +25,9 @@ const RoomPage: React.FC = () => {
   const [floatingEmojis, setFloatingEmojis] = useState<Array<{id: string, emoji: string, userName: string}>>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [showHostTransferModal, setShowHostTransferModal] = useState(false);
+  const [showCountdown, setShowCountdown] = useState(false);
+  const [countdownNumber, setCountdownNumber] = useState(3);
+  const previousRevealedRef = useRef(false);
 
   useEffect(() => {
     // Check for access code in URL parameters
@@ -41,14 +44,39 @@ const RoomPage: React.FC = () => {
       setRoom(roomState);
       setIsJoined(true);
       setStoryInput(roomState.currentStory);
+      previousRevealedRef.current = roomState.revealed;
     });
 
     newSocket.on('room-update', (roomState: Room) => {
+      const wasRevealed = previousRevealedRef.current;
       setRoom(roomState);
       setStoryInput(roomState.currentStory);
+      
       if (roomState.revealed === false) {
         setSelectedCard(null);
+        setShowCountdown(false);
+      } else if (roomState.revealed && !wasRevealed) {
+        // Votes just got revealed, start countdown
+        setShowCountdown(true);
+        setCountdownNumber(3);
+        
+        // Countdown animation
+        let count = 3;
+        const countdownInterval = setInterval(() => {
+          count--;
+          if (count > 0) {
+            setCountdownNumber(count);
+          } else {
+            clearInterval(countdownInterval);
+            setShowCountdown(false);
+            // Trigger confetti after countdown
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 5000);
+          }
+        }, 1000);
       }
+      
+      previousRevealedRef.current = roomState.revealed;
     });
 
     newSocket.on('error', (message: string) => {
@@ -93,11 +121,6 @@ const RoomPage: React.FC = () => {
   const handleRevealVotes = () => {
     if (socket) {
       socket.emit('reveal-votes');
-      // Trigger confetti animation only if successful
-      if (room?.isHost) {
-        setShowConfetti(true);
-        setTimeout(() => setShowConfetti(false), 5000);
-      }
     }
   };
 
@@ -170,6 +193,16 @@ const RoomPage: React.FC = () => {
 
   return (
     <div className={`room-page ${showConfetti ? 'confetti-active' : ''}`}>
+      {/* Countdown Overlay */}
+      {showCountdown && (
+        <div className="countdown-overlay">
+          <div className="countdown-content">
+            <div className="countdown-number">{countdownNumber}</div>
+            <div className="countdown-text">Revealing Results...</div>
+          </div>
+        </div>
+      )}
+      
       {/* Floating Emojis */}
       {floatingEmojis && floatingEmojis.length > 0 && floatingEmojis.map(emoji => (
         <FloatingEmoji
@@ -278,7 +311,7 @@ const RoomPage: React.FC = () => {
               className="reveal-button"
               onClick={handleRevealVotes}
               disabled={room.revealed || room.votes.length === 0 || !room.isHost}
-              title={!room.isHost ? "Only the host can reveal votes" : ""}
+              title={!room.isHost ? "Only the host can reveal votes" : room.votes.length === 0 ? "No votes to reveal" : ""}
             >
               {room.isHost ? "Reveal Votes" : "Reveal Votes (Host Only)"}
             </button>
