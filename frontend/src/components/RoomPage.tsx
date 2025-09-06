@@ -34,7 +34,7 @@ const RoomPage: React.FC = () => {
   const previousRevealedRef = useRef(false);
 
   useEffect(() => {
-    // Check for access code in URL parameters
+    // Check for access code in URL parameters first
     const urlParams = new URLSearchParams(window.location.search);
     const codeFromUrl = urlParams.get('code');
     if (codeFromUrl) {
@@ -44,11 +44,63 @@ const RoomPage: React.FC = () => {
     const newSocket = io(SOCKET_URL);
     setSocket(newSocket);
 
+    // Auto-rejoin if session data exists
+    newSocket.on('connect', () => {
+      console.log('Socket connected, checking for saved session...');
+      const savedSession = localStorage.getItem(`session-${roomId}`);
+      if (savedSession) {
+        const sessionData = JSON.parse(savedSession);
+        console.log('Found saved session:', sessionData);
+        // Check if session is not too old (24 hours)
+        const sessionAge = Date.now() - sessionData.timestamp;
+        if (sessionAge < 24 * 60 * 60 * 1000) {
+          console.log('Session is valid, auto-joining room...');
+          // Auto-rejoin with saved credentials
+          setUserName(sessionData.userName);
+          setAccessCode(sessionData.accessCode);
+          newSocket.emit('join-room', { 
+            roomId, 
+            name: sessionData.userName, 
+            accessCode: sessionData.accessCode 
+          });
+        } else {
+          console.log('Session is too old, clearing...');
+          // Clear old session data
+          localStorage.removeItem(`session-${roomId}`);
+        }
+      } else {
+        console.log('No saved session found');
+      }
+    });
+
     newSocket.on('room-joined', (roomState: Room) => {
       setRoom(roomState);
       setIsJoined(true);
       setStoryInput(roomState.currentStory);
       previousRevealedRef.current = roomState.revealed;
+      
+      // Save session data to localStorage
+      if (userName && accessCode) {
+        const sessionData: any = {
+          userName,
+          accessCode,
+          timestamp: Date.now()
+        };
+        
+        // Restore selected card if it exists in session and votes haven't been revealed
+        const savedSession = localStorage.getItem(`session-${roomId}`);
+        if (savedSession && !roomState.revealed) {
+          const oldSessionData = JSON.parse(savedSession);
+          if (oldSessionData.selectedCard) {
+            setSelectedCard(oldSessionData.selectedCard);
+            // Re-submit the vote
+            newSocket.emit('vote', { value: oldSessionData.selectedCard });
+            sessionData.selectedCard = oldSessionData.selectedCard;
+          }
+        }
+        
+        localStorage.setItem(`session-${roomId}`, JSON.stringify(sessionData));
+      }
     });
 
     newSocket.on('room-update', (roomState: Room) => {
@@ -59,6 +111,14 @@ const RoomPage: React.FC = () => {
       if (roomState.revealed === false) {
         setSelectedCard(null);
         setShowCountdown(false);
+        
+        // Clear selected card from session when votes are reset
+        const savedSession = localStorage.getItem(`session-${roomId}`);
+        if (savedSession) {
+          const sessionData = JSON.parse(savedSession);
+          delete sessionData.selectedCard;
+          localStorage.setItem(`session-${roomId}`, JSON.stringify(sessionData));
+        }
       } else if (roomState.revealed && !wasRevealed) {
         // Votes just got revealed, start countdown
         setShowCountdown(true);
@@ -84,6 +144,12 @@ const RoomPage: React.FC = () => {
     });
 
     newSocket.on('error', (message: string) => {
+      console.error('Socket error:', message);
+      // Only navigate away if it's not an access code error during auto-rejoin
+      if (message === 'Invalid access code') {
+        // Clear invalid session
+        localStorage.removeItem(`session-${roomId}`);
+      }
       alert(message);
       navigate('/');
     });
@@ -104,7 +170,17 @@ const RoomPage: React.FC = () => {
 
   const handleJoinRoom = () => {
     if (userName.trim() && accessCode.trim() && socket) {
-      socket.emit('join-room', { roomId, name: userName.trim(), accessCode: accessCode.trim() });
+      const trimmedName = userName.trim();
+      const trimmedCode = accessCode.trim();
+      
+      // Save session data before joining
+      localStorage.setItem(`session-${roomId}`, JSON.stringify({
+        userName: trimmedName,
+        accessCode: trimmedCode,
+        timestamp: Date.now()
+      }));
+      
+      socket.emit('join-room', { roomId, name: trimmedName, accessCode: trimmedCode });
     }
   };
 
@@ -112,6 +188,14 @@ const RoomPage: React.FC = () => {
     if (socket && !room?.revealed) {
       setSelectedCard(value);
       socket.emit('vote', { value });
+      
+      // Update session data with the current vote
+      const savedSession = localStorage.getItem(`session-${roomId}`);
+      if (savedSession) {
+        const sessionData = JSON.parse(savedSession);
+        sessionData.selectedCard = value;
+        localStorage.setItem(`session-${roomId}`, JSON.stringify(sessionData));
+      }
     }
   };
 
@@ -119,6 +203,14 @@ const RoomPage: React.FC = () => {
     if (socket) {
       setSelectedCard(null);
       socket.emit('clear-vote');
+      
+      // Update session data to clear the vote
+      const savedSession = localStorage.getItem(`session-${roomId}`);
+      if (savedSession) {
+        const sessionData = JSON.parse(savedSession);
+        delete sessionData.selectedCard;
+        localStorage.setItem(`session-${roomId}`, JSON.stringify(sessionData));
+      }
     }
   };
 
@@ -163,6 +255,9 @@ const RoomPage: React.FC = () => {
   };
 
   const handleLeaveRoom = () => {
+    // Clear session data when leaving
+    localStorage.removeItem(`session-${roomId}`);
+    
     if (room?.isHost && room.users.length > 1) {
       setShowHostTransferModal(true);
     } else {
@@ -495,7 +590,10 @@ const RoomPage: React.FC = () => {
               <button className="cancel-button" onClick={() => setShowHostTransferModal(false)}>
                 Cancel
               </button>
-              <button className="leave-anyway-button" onClick={() => navigate('/')}>
+              <button className="leave-anyway-button" onClick={() => {
+                localStorage.removeItem(`session-${roomId}`);
+                navigate('/');
+              }}>
                 Leave Without Transfer
               </button>
             </div>

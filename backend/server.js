@@ -21,6 +21,8 @@ const io = new Server(server, {
 });
 
 const rooms = new Map();
+const roomCleanupTimers = new Map(); // Track cleanup timers for empty rooms
+const ROOM_CLEANUP_DELAY = 60000; // 60 seconds grace period for reconnection
 
 class Room {
   constructor(id, name, accessCode) {
@@ -33,28 +35,59 @@ class Room {
     this.currentStory = '';
     this.emojis = [];
     this.hostId = null;
+    this.originalHostName = null; // Track original host by name for reconnection
   }
 
   addUser(userId, userName) {
-    this.users.set(userId, { id: userId, name: userName, isObserver: false, status: 'active' });
-    this.votes.delete(userId);
+    // Check if user with same name already exists (potential reconnection)
+    let existingUser = null;
+    for (const [id, user] of this.users.entries()) {
+      if (user.name === userName && id !== userId) {
+        // Remove the old connection
+        this.users.delete(id);
+        // Preserve their vote if they had one
+        if (this.votes.has(id)) {
+          const vote = this.votes.get(id);
+          this.votes.delete(id);
+          this.votes.set(userId, vote);
+        }
+        existingUser = user;
+        break;
+      }
+    }
     
-    // Set first user as host
+    this.users.set(userId, { 
+      id: userId, 
+      name: userName, 
+      isObserver: false, 
+      status: existingUser ? existingUser.status : 'active' 
+    });
+    
+    // Set first user as host and track their name
     if (!this.hostId) {
+      this.hostId = userId;
+      this.originalHostName = userName;
+    } else if (userName === this.originalHostName) {
+      // If this is the original host reconnecting, restore host status
       this.hostId = userId;
     }
   }
 
   removeUser(userId) {
+    const user = this.users.get(userId);
     this.users.delete(userId);
     this.votes.delete(userId);
     
-    // If host leaves, assign new host
+    // If host leaves, only reassign if room won't be empty
+    // Keep originalHostName so they can reclaim host status on reconnect
     if (this.hostId === userId) {
-      this.hostId = null;
       if (this.users.size > 0) {
-        // Assign first remaining user as new host
+        // Temporarily assign first remaining user as host
+        // Original host can reclaim when they reconnect
         this.hostId = this.users.keys().next().value;
+      } else {
+        // Room is empty, but keep originalHostName for reconnection
+        this.hostId = null;
       }
     }
   }
@@ -184,20 +217,31 @@ io.on('connection', (socket) => {
   let userName = null;
 
   socket.on('join-room', ({ roomId, name, accessCode }) => {
+    console.log(`Join room attempt - Room: ${roomId}, User: ${name}, Code: ${accessCode}`);
     const room = rooms.get(roomId);
     if (!room) {
+      console.log('Room not found:', roomId);
       socket.emit('error', 'Room not found');
       return;
     }
 
     // Validate access code
     if (room.accessCode && room.accessCode !== accessCode) {
+      console.log('Invalid access code provided:', accessCode, 'Expected:', room.accessCode);
       socket.emit('error', 'Invalid access code');
       return;
     }
 
     currentRoom = room;
     userName = name;
+    console.log(`User ${name} successfully joining room ${roomId}`);
+    
+    // Cancel any pending cleanup timer for this room
+    if (roomCleanupTimers.has(roomId)) {
+      clearTimeout(roomCleanupTimers.get(roomId));
+      roomCleanupTimers.delete(roomId);
+      console.log(`Cancelled cleanup timer for room ${roomId} - user rejoined`);
+    }
     
     socket.join(roomId);
     room.addUser(socket.id, name);
@@ -349,9 +393,26 @@ io.on('connection', (socket) => {
       
       // Check if room should be deleted before sending updates
       if (currentRoom.users.size === 0) {
-        // Delete the room immediately when empty
-        rooms.delete(roomId);
-        console.log(`Room ${roomId} closed - no users remaining`);
+        // Schedule room for deletion after grace period
+        console.log(`Room ${roomId} is now empty, scheduling cleanup in ${ROOM_CLEANUP_DELAY/1000} seconds`);
+        
+        // Clear any existing timer for this room
+        if (roomCleanupTimers.has(roomId)) {
+          clearTimeout(roomCleanupTimers.get(roomId));
+        }
+        
+        // Set new cleanup timer
+        const cleanupTimer = setTimeout(() => {
+          // Double-check the room is still empty before deleting
+          const room = rooms.get(roomId);
+          if (room && room.users.size === 0) {
+            rooms.delete(roomId);
+            roomCleanupTimers.delete(roomId);
+            console.log(`Room ${roomId} deleted after cleanup timeout`);
+          }
+        }, ROOM_CLEANUP_DELAY);
+        
+        roomCleanupTimers.set(roomId, cleanupTimer);
       } else {
         // Only send updates if room still has users
         // Notify about user leaving
