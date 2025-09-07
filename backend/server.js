@@ -64,13 +64,24 @@ class Room {
     });
     
     // Set first user as host and track their name
-    if (!this.hostId) {
+    if (!this.originalHostName) {
+      // First user in room becomes the original host
       this.hostId = userId;
       this.originalHostName = userName;
+      console.log(`Setting ${userName} as original host with ID ${userId}`);
     } else if (userName === this.originalHostName) {
       // If this is the original host reconnecting, restore host status
       this.hostId = userId;
+      console.log(`Restoring host status for ${userName} with new ID ${userId}`);
+    } else if (!this.hostId || this.users.size === 1) {
+      // If there's no current host (room was empty), make this user the temporary host
+      // unless they're the original host (handled above)
+      if (this.users.size === 1) {
+        this.hostId = userId;
+        console.log(`Room was empty, setting ${userName} as temporary host with ID ${userId}`);
+      }
     }
+    console.log(`Current hostId: ${this.hostId}, originalHostName: ${this.originalHostName}`);
   }
 
   removeUser(userId) {
@@ -85,8 +96,11 @@ class Room {
         // Temporarily assign first remaining user as host
         // Original host can reclaim when they reconnect
         this.hostId = this.users.keys().next().value;
+        console.log(`Host left, temporarily assigning host to ${this.hostId}`);
       } else {
-        // Room is empty, but keep originalHostName for reconnection
+        // Room is empty, set hostId to null but keep originalHostName
+        // The original host can reclaim it when they return
+        console.log(`Host left and room is empty, clearing hostId but keeping originalHostName: ${this.originalHostName}`);
         this.hostId = null;
       }
     }
@@ -147,6 +161,8 @@ class Room {
       isOwnVote: userId === viewerId
     }));
 
+    const isViewerHost = viewerId === this.hostId;
+
     return {
       id: this.id,
       name: this.name,
@@ -156,7 +172,7 @@ class Room {
       currentStory: this.currentStory,
       stats: this.revealed ? this.calculateStats() : null,
       hostId: this.hostId,
-      isHost: viewerId === this.hostId,
+      isHost: isViewerHost,
       accessCode: this.accessCode
     };
   }

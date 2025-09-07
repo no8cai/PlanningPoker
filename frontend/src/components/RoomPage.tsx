@@ -74,6 +74,7 @@ const RoomPage: React.FC = () => {
     });
 
     newSocket.on('room-joined', (roomState: Room) => {
+      console.log('Room joined, isHost:', roomState.isHost, 'hostId:', roomState.hostId);
       setRoom(roomState);
       setIsJoined(true);
       setStoryInput(roomState.currentStory);
@@ -104,6 +105,7 @@ const RoomPage: React.FC = () => {
     });
 
     newSocket.on('room-update', (roomState: Room) => {
+      console.log('Room update, isHost:', roomState.isHost, 'hostId:', roomState.hostId);
       const wasRevealed = previousRevealedRef.current;
       setRoom(roomState);
       setStoryInput(roomState.currentStory);
@@ -215,6 +217,7 @@ const RoomPage: React.FC = () => {
   };
 
   const handleRevealVotes = () => {
+    console.log('Reveal votes clicked, socket:', socket?.connected, 'isHost:', room?.isHost);
     if (socket) {
       socket.emit('reveal-votes');
     }
@@ -229,6 +232,7 @@ const RoomPage: React.FC = () => {
   }, [socket]);
 
   const handleResetVotes = () => {
+    console.log('Reset votes clicked, socket:', socket?.connected, 'isHost:', room?.isHost);
     if (socket) {
       socket.emit('reset-votes');
     }
@@ -342,6 +346,11 @@ const RoomPage: React.FC = () => {
   if (!room) {
     return <div>Loading...</div>;
   }
+
+  // Debug logging for button states
+  console.log('Render - isHost:', room.isHost, 'revealed:', room.revealed, 'votes:', room.votes?.length, 
+    'reveal disabled:', room.revealed || room.votes.length === 0 || !room.isHost, 
+    'reset disabled:', (!room.revealed && room.votes.length === 0) || !room.isHost);
 
   return (
     <div className={`room-page ${showConfetti ? 'confetti-active' : ''}`}>
