@@ -46,15 +46,12 @@ const RoomPage: React.FC = () => {
 
     // Auto-rejoin if session data exists
     newSocket.on('connect', () => {
-      console.log('Socket connected, checking for saved session...');
       const savedSession = localStorage.getItem(`session-${roomId}`);
       if (savedSession) {
         const sessionData = JSON.parse(savedSession);
-        console.log('Found saved session:', sessionData);
         // Check if session is not too old (24 hours)
         const sessionAge = Date.now() - sessionData.timestamp;
         if (sessionAge < 24 * 60 * 60 * 1000) {
-          console.log('Session is valid, auto-joining room...');
           // Auto-rejoin with saved credentials
           setUserName(sessionData.userName);
           setAccessCode(sessionData.accessCode);
@@ -64,17 +61,13 @@ const RoomPage: React.FC = () => {
             accessCode: sessionData.accessCode 
           });
         } else {
-          console.log('Session is too old, clearing...');
           // Clear old session data
           localStorage.removeItem(`session-${roomId}`);
         }
-      } else {
-        console.log('No saved session found');
       }
     });
 
     newSocket.on('room-joined', (roomState: Room) => {
-      console.log('Room joined, isHost:', roomState.isHost, 'hostId:', roomState.hostId);
       setRoom(roomState);
       setIsJoined(true);
       setStoryInput(roomState.currentStory);
@@ -105,7 +98,6 @@ const RoomPage: React.FC = () => {
     });
 
     newSocket.on('room-update', (roomState: Room) => {
-      console.log('Room update, isHost:', roomState.isHost, 'hostId:', roomState.hostId);
       const wasRevealed = previousRevealedRef.current;
       setRoom(roomState);
       setStoryInput(roomState.currentStory);
@@ -146,7 +138,6 @@ const RoomPage: React.FC = () => {
     });
 
     newSocket.on('error', (message: string) => {
-      console.error('Socket error:', message);
       // Only navigate away if it's not an access code error during auto-rejoin
       if (message === 'Invalid access code') {
         // Clear invalid session
@@ -217,7 +208,6 @@ const RoomPage: React.FC = () => {
   };
 
   const handleRevealVotes = () => {
-    console.log('Reveal votes clicked, socket:', socket?.connected, 'isHost:', room?.isHost);
     if (socket) {
       socket.emit('reveal-votes');
     }
@@ -226,13 +216,10 @@ const RoomPage: React.FC = () => {
   const handleEmojiSelect = useCallback((emoji: string) => {
     if (socket && socket.connected) {
       socket.emit('send-emoji', { emoji });
-    } else {
-      console.warn('Socket not connected, cannot send emoji');
     }
   }, [socket]);
 
   const handleResetVotes = () => {
-    console.log('Reset votes clicked, socket:', socket?.connected, 'isHost:', room?.isHost);
     if (socket) {
       socket.emit('reset-votes');
     }
@@ -346,11 +333,6 @@ const RoomPage: React.FC = () => {
   if (!room) {
     return <div>Loading...</div>;
   }
-
-  // Debug logging for button states
-  console.log('Render - isHost:', room.isHost, 'revealed:', room.revealed, 'votes:', room.votes?.length, 
-    'reveal disabled:', room.revealed || room.votes.length === 0 || !room.isHost, 
-    'reset disabled:', (!room.revealed && room.votes.length === 0) || !room.isHost);
 
   return (
     <div className={`room-page ${showConfetti ? 'confetti-active' : ''}`}>
