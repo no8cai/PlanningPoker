@@ -38,7 +38,7 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
   });
 
   // Find the maximum count for scaling
-  const maxCount = Math.max(...displayValues.map(v => distribution[v] || 0), 1);
+  const maxVoteCount = Math.max(...displayValues.map(v => distribution[v] || 0), 1);
 
   // Calculate consensus level
   const getConsensusLevel = () => {
@@ -64,10 +64,11 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
     average = sum / numCount;
   }
 
-  // Find mode (most frequent value)
-  const mode = Object.entries(distribution).reduce((a, b) => 
-    distribution[a[0]] > distribution[b[0]] ? a : b
-  )[0];
+  // Find mode(s) (most frequent value(s))
+  const maxCount = Math.max(...Object.values(distribution));
+  const modes = Object.entries(distribution)
+    .filter(([_, count]) => count === maxCount)
+    .map(([value]) => value);
 
   return (
     <div className="vote-distribution-compact">
@@ -85,7 +86,7 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
               </span>
             )}
             <span className="stat-mini">
-              <span className="stat-value">{mode}</span> has most votes
+              <span className="stat-value">{modes.join(', ')}</span> {modes.length > 1 ? 'have' : 'has'} most votes
             </span>
           </div>
         </div>
@@ -100,7 +101,7 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
         {displayValues.map((value, index) => {
           const count = distribution[value];
           const percentage = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
-          const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+          const barWidth = maxVoteCount > 0 ? (count / maxVoteCount) * 100 : 0;
           
           // Get voter names for this value
           const votersForValue = votes
