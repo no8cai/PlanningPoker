@@ -53,7 +53,7 @@
 }
 
 .stat-mini {
-  font-size: 13px;
+  font-size: 20px;
   color: rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
@@ -63,7 +63,7 @@
 .stat-mini .stat-value {
   color: white;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 20px;
 }
 
 .consensus-indicator {
@@ -85,7 +85,7 @@
 }
 
 .consensus-text {
-  font-size: 10px;
+  font-size: 15px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
