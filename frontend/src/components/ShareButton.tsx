@@ -16,22 +16,36 @@ const ShareButton: React.FC<ShareButtonProps> = ({ roomId, roomName, accessCode 
     : `${window.location.origin}/room/${roomId}`;
 
   const handleCopyLink = async () => {
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(roomUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        return;
+      } catch (error) {
+        console.log('Clipboard API failed, using fallback');
+      }
+    }
+    
+    // Fallback for older browsers or when clipboard API fails
+    const textArea = document.createElement('textarea');
+    textArea.value = roomUrl;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
     try {
-      await navigator.clipboard.writeText(roomUrl);
+      document.execCommand('copy');
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      // Fallback for mobile devices
-      const textArea = document.createElement('textarea');
-      textArea.value = roomUrl;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
+      console.error('Failed to copy:', err);
+    } finally {
       document.body.removeChild(textArea);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
   };
 

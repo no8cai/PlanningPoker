@@ -272,21 +272,21 @@ const RoomPage: React.FC = () => {
     }
   };
 
-  const handleCopyShareLink = () => {
+  const handleCopyShareLink = async () => {
     if (roomId && room?.accessCode) {
       const shareUrl = `${window.location.origin}/room/${roomId}?code=${room.accessCode}`;
       
       // Try modern clipboard API first
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(shareUrl)
-          .then(() => {
-            setCopyLinkFeedback(true);
-            setTimeout(() => setCopyLinkFeedback(false), 2000);
-          })
-          .catch(() => {
-            // Fallback to execCommand
-            fallbackCopyToClipboard(shareUrl);
-          });
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          setCopyLinkFeedback(true);
+          setTimeout(() => setCopyLinkFeedback(false), 2000);
+        } catch (error) {
+          // Fallback to execCommand if clipboard API fails
+          console.log('Clipboard API failed, using fallback');
+          fallbackCopyToClipboard(shareUrl);
+        }
       } else {
         // Use fallback directly if clipboard API not available
         fallbackCopyToClipboard(shareUrl);
@@ -315,19 +315,19 @@ const RoomPage: React.FC = () => {
     }
   };
 
-  const handleCopyAccessCode = () => {
+  const handleCopyAccessCode = async () => {
     if (room?.accessCode) {
       // Try modern clipboard API first
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(room.accessCode)
-          .then(() => {
-            setCopyCodeFeedback(true);
-            setTimeout(() => setCopyCodeFeedback(false), 2000);
-          })
-          .catch(() => {
-            // Fallback to execCommand
-            fallbackCopyAccessCode();
-          });
+        try {
+          await navigator.clipboard.writeText(room.accessCode);
+          setCopyCodeFeedback(true);
+          setTimeout(() => setCopyCodeFeedback(false), 2000);
+        } catch (error) {
+          // Fallback to execCommand if clipboard API fails
+          console.log('Clipboard API failed, using fallback');
+          fallbackCopyAccessCode();
+        }
       } else {
         // Use fallback directly if clipboard API not available
         fallbackCopyAccessCode();
