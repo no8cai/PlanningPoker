@@ -256,49 +256,89 @@ const RoomPage: React.FC = () => {
     }
   };
 
-  const handleCopyShareLink = async () => {
+  const handleCopyShareLink = () => {
     if (roomId && room?.accessCode) {
-      try {
-        const shareUrl = `${window.location.origin}/room/${roomId}?code=${room.accessCode}`;
-        await navigator.clipboard.writeText(shareUrl);
-        setCopyLinkFeedback(true);
-        setTimeout(() => setCopyLinkFeedback(false), 2000);
-      } catch (err) {
-        // Fallback for mobile devices
-        const textArea = document.createElement('textarea');
-        const shareUrl = `${window.location.origin}/room/${roomId}?code=${room.accessCode}`;
-        textArea.value = shareUrl;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setCopyLinkFeedback(true);
-        setTimeout(() => setCopyLinkFeedback(false), 2000);
+      const shareUrl = `${window.location.origin}/room/${roomId}?code=${room.accessCode}`;
+      
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(shareUrl)
+          .then(() => {
+            setCopyLinkFeedback(true);
+            setTimeout(() => setCopyLinkFeedback(false), 2000);
+          })
+          .catch(() => {
+            // Fallback to execCommand
+            fallbackCopyToClipboard(shareUrl);
+          });
+      } else {
+        // Use fallback directly if clipboard API not available
+        fallbackCopyToClipboard(shareUrl);
       }
     }
   };
 
-  const handleCopyAccessCode = async () => {
+  const fallbackCopyToClipboard = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      setCopyLinkFeedback(true);
+      setTimeout(() => setCopyLinkFeedback(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    } finally {
+      document.body.removeChild(textArea);
+    }
+  };
+
+  const handleCopyAccessCode = () => {
     if (room?.accessCode) {
-      try {
-        await navigator.clipboard.writeText(room.accessCode);
-        setCopyCodeFeedback(true);
-        setTimeout(() => setCopyCodeFeedback(false), 2000);
-      } catch (err) {
-        // Fallback for mobile devices
-        const textArea = document.createElement('textarea');
-        textArea.value = room.accessCode;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textArea);
-        setCopyCodeFeedback(true);
-        setTimeout(() => setCopyCodeFeedback(false), 2000);
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(room.accessCode)
+          .then(() => {
+            setCopyCodeFeedback(true);
+            setTimeout(() => setCopyCodeFeedback(false), 2000);
+          })
+          .catch(() => {
+            // Fallback to execCommand
+            fallbackCopyAccessCode();
+          });
+      } else {
+        // Use fallback directly if clipboard API not available
+        fallbackCopyAccessCode();
       }
+    }
+  };
+
+  const fallbackCopyAccessCode = () => {
+    if (!room?.accessCode) return;
+    
+    const textArea = document.createElement('textarea');
+    textArea.value = room.accessCode;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      document.execCommand('copy');
+      setCopyCodeFeedback(true);
+      setTimeout(() => setCopyCodeFeedback(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy access code:', err);
+    } finally {
+      document.body.removeChild(textArea);
     }
   };
 
