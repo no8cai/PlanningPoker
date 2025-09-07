@@ -113,7 +113,7 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
                   }}
                   title={`${count} vote${count !== 1 ? 's' : ''} (${percentage.toFixed(1)}%)`}
                 >
-                  <span className="bar-count-inline">{count}</span>
+                  <span className="bar-count-inline">{count} {count === 1?'vote':'votes'}</span>
                 </div>
               </div>
             </div>

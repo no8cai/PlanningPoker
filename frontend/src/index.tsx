@@ -4,11 +4,36 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+// Capture the error first before any handlers run
+const capturedErrors: any[] = [];
+
 // Global error handler for unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
   // Check if this is a browser extension error
   const reason = event.reason;
   const message = reason?.message || reason?.toString() || '';
+  const stack = reason?.stack || '';
+  
+  // Store the error for debugging
+  capturedErrors.push({
+    time: new Date().toISOString(),
+    message,
+    stack,
+    reason,
+    prevented: false
+  });
+  
+  // Make capturedErrors available globally for debugging
+  (window as any).capturedErrors = capturedErrors;
+  
+  // Common browser extension error patterns - check exact match
+  if (message === 'A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received') {
+    console.log('[Planning Poker] Suppressing exact browser extension error');
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    capturedErrors[capturedErrors.length - 1].prevented = true;
+    return false;
+  }
   
   // Common browser extension error patterns
   const extensionErrorPatterns = [
@@ -24,18 +49,22 @@ window.addEventListener('unhandledrejection', (event) => {
   
   // Check if error matches any extension pattern
   const isExtensionError = extensionErrorPatterns.some(pattern => 
-    message.toLowerCase().includes(pattern.toLowerCase())
+    message.toLowerCase().includes(pattern.toLowerCase()) ||
+    stack.toLowerCase().includes(pattern.toLowerCase())
   );
   
   if (isExtensionError) {
     // This is likely a browser extension issue, prevent it from showing in console
+    console.log('[Planning Poker] Suppressing browser extension error:', message);
     event.preventDefault();
-    return;
+    event.stopImmediatePropagation();
+    capturedErrors[capturedErrors.length - 1].prevented = true;
+    return false;
   }
   
   // Log other unhandled rejections
   console.error('Unhandled promise rejection:', event.reason);
-});
+}, true); // Use capture phase
 
 // Suppress specific extension-related errors in console
 const originalError = console.error;
