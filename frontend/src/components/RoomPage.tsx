@@ -7,6 +7,7 @@ import EmojiPicker from './EmojiPicker';
 import FloatingEmoji from './FloatingEmoji';
 import ShareButton from './ShareButton';
 import StatusSelector from './StatusSelector';
+import VoteDistribution from './VoteDistribution';
 import { Room, UserStatus } from '../types';
 import { SOCKET_URL } from '../config';
 import './RoomPage.css';
@@ -572,28 +573,11 @@ const RoomPage: React.FC = () => {
               </div>
               
               {room.stats.distribution && Object.keys(room.stats.distribution).length > 0 && (
-                <div className="vote-distribution">
-                  <h4>Vote Distribution</h4>
-                  <div className="distribution-grid">
-                    {Object.entries(room.stats.distribution)
-                      .sort((a, b) => {
-                        // Sort by value, treating '?' as last
-                        if (a[0] === '?') return 1;
-                        if (b[0] === '?') return -1;
-                        const aNum = parseFloat(a[0]);
-                        const bNum = parseFloat(b[0]);
-                        if (isNaN(aNum)) return 1;
-                        if (isNaN(bNum)) return -1;
-                        return aNum - bNum;
-                      })
-                      .map(([value, count]) => (
-                        <div key={value} className="distribution-item">
-                          <span className="distribution-value">{value}</span>
-                          <span className="distribution-count">{count} {count === 1 ? 'vote' : 'votes'}</span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
+                <VoteDistribution 
+                  distribution={room.stats.distribution}
+                  totalVotes={room.stats.count}
+                  revealed={room.revealed}
+                />
               )}
             </div>
           )}
