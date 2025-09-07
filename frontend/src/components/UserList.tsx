@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { User, Vote, UserStatus } from '../types';
 import './UserList.css';
 
@@ -6,9 +6,14 @@ interface UserListProps {
   users: User[];
   votes: Vote[];
   revealed: boolean;
+  currentUserId?: string;
+  onNameChange?: (newName: string) => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
+const UserList: React.FC<UserListProps> = ({ users, votes, revealed, currentUserId, onNameChange }) => {
+  const [editingName, setEditingName] = useState(false);
+  const [tempName, setTempName] = useState('');
+
   const getUserVote = (userId: string) => {
     const vote = votes.find(v => v.userId === userId);
     return vote;
@@ -44,6 +49,32 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
     }
   };
 
+  const handleStartEdit = (userName: string) => {
+    setEditingName(true);
+    setTempName(userName);
+  };
+
+  const handleSaveName = () => {
+    if (tempName.trim() && tempName.trim() !== '' && onNameChange) {
+      onNameChange(tempName.trim());
+    }
+    setEditingName(false);
+    setTempName('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingName(false);
+    setTempName('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSaveName();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
   const votedCount = votes.length;
   const totalUsers = users.filter(u => !u.isObserver).length;
 
@@ -58,16 +89,33 @@ const UserList: React.FC<UserListProps> = ({ users, votes, revealed }) => {
       <div className="users">
         {users.map(user => {
           const vote = getUserVote(user.id);
-          const isOwnUser = vote?.isOwnVote || false;
+          const isOwnUser = user.id === currentUserId || vote?.isOwnVote || false;
           return (
             <div key={user.id} className={`user-item ${isOwnUser ? 'own-user' : ''} ${user.status !== 'active' ? 'status-' + user.status : ''}`}>
               <div className="user-info">
                 <span className="user-status-icon" title={getStatusLabel(user.status)}>
                   {getStatusIcon(user.status)}
                 </span>
-                <span className="user-name">
-                  {user.isHost && '👑 '}{isOwnUser && '👤 '}{user.name}{isOwnUser && ' (You)'}{user.isHost && ' (Host)'}
-                </span>
+                {isOwnUser && editingName ? (
+                  <input
+                    type="text"
+                    className="user-name-input"
+                    value={tempName}
+                    onChange={(e) => setTempName(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    onBlur={handleSaveName}
+                    autoFocus
+                    maxLength={20}
+                  />
+                ) : (
+                  <span 
+                    className={`user-name ${isOwnUser ? 'editable' : ''}`}
+                    onClick={isOwnUser ? () => handleStartEdit(user.name) : undefined}
+                    title={isOwnUser ? 'Click to edit your name' : undefined}
+                  >
+                    {user.isHost && '👑 '}{isOwnUser && '👤 '}{user.name}{isOwnUser && ' (You)'}{user.isHost && ' (Host)'}
+                  </span>
+                )}
                 {user.isObserver && <span className="observer-badge">Observer</span>}
               </div>
               <div className="vote-status">

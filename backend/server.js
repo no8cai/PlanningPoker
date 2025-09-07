@@ -374,6 +374,31 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('update-name', ({ newName }) => {
+    if (!currentRoom || !newName || newName.trim() === '') return;
+    
+    const user = currentRoom.users.get(socket.id);
+    if (user) {
+      const oldName = user.name;
+      user.name = newName.trim();
+      userName = newName.trim(); // Update the local userName variable
+      
+      // If this user is the original host, update the originalHostName
+      if (currentRoom.originalHostName === oldName) {
+        currentRoom.originalHostName = newName.trim();
+      }
+      
+      console.log(`User ${oldName} changed name to ${user.name}`);
+      
+      // Send personalized room state to each client
+      for (const [clientId, client] of io.sockets.sockets) {
+        if (currentRoom.users.has(clientId)) {
+          client.emit('room-update', currentRoom.getState(clientId));
+        }
+      }
+    }
+  });
+
   socket.on('transfer-host', ({ newHostId }) => {
     if (!currentRoom) return;
     

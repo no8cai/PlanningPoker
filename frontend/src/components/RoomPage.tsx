@@ -245,6 +245,21 @@ const RoomPage: React.FC = () => {
     }
   };
 
+  const handleNameChange = (newName: string) => {
+    if (socket && newName.trim() && newName !== userName) {
+      setUserName(newName);
+      socket.emit('update-name', { newName: newName.trim() });
+      
+      // Update session data with new name
+      const savedSession = localStorage.getItem(`session-${roomId}`);
+      if (savedSession) {
+        const sessionData = JSON.parse(savedSession);
+        sessionData.userName = newName.trim();
+        localStorage.setItem(`session-${roomId}`, JSON.stringify(sessionData));
+      }
+    }
+  };
+
   const handleLeaveRoom = () => {
     // Clear session data when leaving
     localStorage.removeItem(`session-${roomId}`);
@@ -593,6 +608,8 @@ const RoomPage: React.FC = () => {
               users={room.users}
               votes={room.votes}
               revealed={room.revealed}
+              currentUserId={socket?.id}
+              onNameChange={handleNameChange}
             />
           </div>
         </div>
