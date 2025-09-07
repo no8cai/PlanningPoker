@@ -136,12 +136,13 @@
   border-radius: 10px;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-right: 8px;
+  justify-content: space-between;
+  padding: 0;
   transition: all 0.3s ease;
   animation: expandWidth 0.5s ease-out;
   position: relative;
   min-width: 28px;
+  overflow: hidden;
 }
 
 .horizontal-bar::before {
@@ -174,6 +175,111 @@
   font-weight: 900;
   text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
   z-index: 1;
+  padding: 0 10px;
+}
+
+/* Voters scrolling container */
+.voters-scroll-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 35px; /* Leave space for count badge on right */
+  bottom: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.voters-scroll-content {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  animation: scrollNamesLeftToRight 10s linear infinite;
+  will-change: transform;
+}
+
+/* Pause animation on hover for readability */
+.horizontal-bar:hover .voters-scroll-content {
+  animation-play-state: paused;
+}
+
+/* Add gradient fade on edges for smooth appearance */
+.voters-scroll-container::before,
+.voters-scroll-container::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.voters-scroll-container::before {
+  left: 0;
+  background: linear-gradient(90deg, 
+    rgba(102, 126, 234, 0.8) 0%, 
+    transparent 100%);
+}
+
+.voters-scroll-container::after {
+  right: 30px; /* Account for badge */
+  background: linear-gradient(90deg, 
+    transparent 0%,
+    rgba(139, 92, 246, 0.6) 100%);
+}
+
+/* Highlight effect for bars with scrolling names */
+.horizontal-bar:has(.voters-scroll-container) {
+  background: linear-gradient(90deg, 
+    rgba(102, 126, 234, 0.8) 0%, 
+    rgba(139, 92, 246, 0.6) 100%);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+@keyframes scrollNamesLeftToRight {
+  0% {
+    left: 0%;
+  }
+  100% {
+    /* Move across the full width of the horizontal-bar container */
+    left: 100%;
+  }
+}
+
+.voter-name {
+  color: rgba(255, 255, 255, 1);
+  font-size: 14px;
+  font-weight: 800;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.7),
+    0 0 30px rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.8px;
+  margin: 0 10px;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* Vote count badge */
+.bar-count-badge {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.98);
+  color: #667eea;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 8px;
+  min-width: 22px;
+  text-align: center;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .empty-track {

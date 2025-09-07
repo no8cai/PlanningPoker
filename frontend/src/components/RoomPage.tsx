@@ -577,6 +577,8 @@ const RoomPage: React.FC = () => {
                   distribution={room.stats.distribution}
                   totalVotes={room.stats.count}
                   revealed={room.revealed}
+                  users={room.users}
+                  votes={room.votes}
                 />
               )}
             </div>

@@ -1,22 +1,22 @@
 import React from 'react';
 import './VoteDistribution.css';
+import { User, Vote } from '../types';
 
 interface VoteDistributionProps {
   distribution: { [key: string]: number };
   totalVotes: number;
   revealed: boolean;
+  users?: User[];
+  votes?: Vote[];
 }
 
-const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, totalVotes, revealed }) => {
+const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, totalVotes, revealed, users = [], votes = [] }) => {
   if (!revealed || totalVotes === 0) {
     return null;
   }
 
   // Define all possible Fibonacci values in order
   const fibonacciSequence = ['0', '0.5', '1', '2', '3', '5', '8', '13', '21', '34', '55', '89', '?', '☕'];
-  
-  // Filter to only include values that are actually available as voting options
-  const commonValues = ['0.5', '1', '2', '3', '5', '8', '13', '?'];
   
   // Only show values that have votes
   const displayValues = Object.keys(distribution).sort((a, b) => {
@@ -97,10 +97,23 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
 
       {/* Horizontal bar chart */}
       <div className="horizontal-chart">
-        {displayValues.map((value) => {
+        {displayValues.map((value, index) => {
           const count = distribution[value];
           const percentage = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
           const barWidth = maxCount > 0 ? (count / maxCount) * 100 : 0;
+          
+          // Get voter names for this value
+          const votersForValue = votes
+            .filter(vote => vote.value === value && vote.hasVoted)
+            .map(vote => {
+              const user = users.find(u => u.id === vote.userId);
+              return user?.name || 'Unknown';
+            });
+          
+          // Create a formatted string of names with separators
+          const voterNamesString = votersForValue.length > 0 
+            ? votersForValue.join(' • ') + ' • '
+            : '';
           
           return (
             <div key={value} className="horizontal-bar-row">
@@ -113,7 +126,22 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
                   }}
                   title={`${count} vote${count !== 1 ? 's' : ''} (${percentage.toFixed(1)}%)`}
                 >
-                  <span className="bar-count-inline">{count} {count === 1?'vote':'votes'}</span>
+                  {votersForValue.length > 0 ? (
+                    <div className="voters-scroll-container">
+                      <div 
+                        className="voters-scroll-content"
+                        style={{ animationDelay: `${index * 0.2}s` }}
+                      >
+                        {/* Original set of names */}
+                        <span className="voter-name">
+                          {voterNamesString}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="bar-count-inline">{count} {count === 1?'vote':'votes'}</span>
+                  )}
+                  <span className="bar-count-badge">{count} {count === 1?'vote':'votes'}</span>
                 </div>
               </div>
             </div>
