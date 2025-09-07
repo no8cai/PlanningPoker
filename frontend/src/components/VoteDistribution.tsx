@@ -65,9 +65,9 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
   }
 
   // Find mode(s) (most frequent value(s))
-  const maxCount = Math.max(...Object.values(distribution));
+  const maxFrequency = Math.max(...Object.values(distribution));
   const modes = Object.entries(distribution)
-    .filter(([_, count]) => count === maxCount)
+    .filter(([_, count]) => count === maxFrequency)
     .map(([value]) => value);
 
   return (
@@ -111,9 +111,9 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
               return user?.name || 'Unknown';
             });
           
-          // Create a formatted string of names with separators
+          // Create a formatted string of names with counters and separators
           const voterNamesString = votersForValue.length > 0 
-            ? votersForValue.join(' • ') + ' • '
+            ? votersForValue.map((name, idx) => `${idx + 1}.${name}`).join(' • ')
             : '';
           
           return (
@@ -131,7 +131,11 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
                     <div className="voters-scroll-container">
                       <div 
                         className="voters-scroll-content"
-                        style={{ animationDelay: `${index * 0.2}s` }}
+                        style={{ 
+                          animationDelay: `${index * 0.2}s`,
+                          // Adjust animation duration based on bar width to maintain constant speed
+                          animationDuration: `${Math.max(5, (barWidth / 100) * 20)}s`
+                        }}
                       >
                         {/* Original set of names */}
                         <span className="voter-name">

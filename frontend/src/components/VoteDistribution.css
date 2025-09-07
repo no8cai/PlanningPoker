@@ -195,7 +195,7 @@
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-  animation: scrollNamesLeftToRight 10s linear infinite;
+  animation: scrollNamesLeftToRight linear infinite;
   will-change: transform;
 }
 
