@@ -39,7 +39,7 @@
 
 .header-left h3 {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   color: white;
   text-transform: uppercase;
@@ -53,7 +53,7 @@
 }
 
 .stat-mini {
-  font-size: 11px;
+  font-size: 13px;
   color: rgba(255, 255, 255, 0.5);
   display: flex;
   align-items: center;
@@ -63,7 +63,7 @@
 .stat-mini .stat-value {
   color: white;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .consensus-indicator {
@@ -107,15 +107,15 @@
 }
 
 .bar-label-left {
-  width: 32px;
+  width: 40px;
   text-align: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  padding: 3px 6px;
-  background: rgba(102, 126, 234, 0.08);
-  border-radius: 4px;
-  border: 1px solid rgba(102, 126, 234, 0.15);
+  font-size: 15px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 1);
+  padding: 4px 8px;
+  background: rgba(102, 126, 234, 0.12);
+  border-radius: 6px;
+  border: 1px solid rgba(102, 126, 234, 0.2);
 }
 
 .bar-track {
@@ -170,9 +170,9 @@
 
 .bar-count-inline {
   color: #ffffff;
-  font-size: 10px;
-  font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  font-weight: 900;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
   z-index: 1;
 }
 
