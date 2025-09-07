@@ -25,7 +25,6 @@ const RoomPage: React.FC = () => {
   const [isJoined, setIsJoined] = useState(false);
   const [storyInput, setStoryInput] = useState('');
   const [floatingEmojis, setFloatingEmojis] = useState<Array<{id: string, emoji: string, userName: string}>>([]);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [showHostTransferModal, setShowHostTransferModal] = useState(false);
   const [showCountdown, setShowCountdown] = useState(false);
   const [countdownNumber, setCountdownNumber] = useState(3);
@@ -33,6 +32,7 @@ const RoomPage: React.FC = () => {
   const [copyLinkFeedback, setCopyLinkFeedback] = useState(false);
   const [copyCodeFeedback, setCopyCodeFeedback] = useState(false);
   const previousRevealedRef = useRef(false);
+  const statsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Check for access code in URL parameters first
@@ -128,9 +128,15 @@ const RoomPage: React.FC = () => {
           } else {
             clearInterval(countdownInterval);
             setShowCountdown(false);
-            // Trigger confetti after countdown
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 5000);
+            // Auto-scroll to statistics section after countdown
+            setTimeout(() => {
+              if (statsRef.current) {
+                statsRef.current.scrollIntoView({ 
+                  behavior: 'smooth', 
+                  block: 'center' 
+                });
+              }
+            }, 300);
           }
         }, 1000);
       }
@@ -391,7 +397,7 @@ const RoomPage: React.FC = () => {
   }
 
   return (
-    <div className={`room-page ${showConfetti ? 'confetti-active' : ''}`}>
+    <div className="room-page">
       {/* Countdown Overlay */}
       {showCountdown && (
         <div className="countdown-overlay">
@@ -411,19 +417,6 @@ const RoomPage: React.FC = () => {
           userName={emoji.userName}
         />
       ))}
-      
-      {/* Confetti Animation */}
-      {showConfetti && (
-        <div className="confetti-container">
-          {[...Array(50)].map((_, i) => (
-            <div key={i} className="confetti" style={{
-              left: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              backgroundColor: ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800'][Math.floor(Math.random() * 15)]
-            }} />
-          ))}
-        </div>
-      )}
 
       <div className="room-container">
         <div className="room-header">
@@ -551,7 +544,7 @@ const RoomPage: React.FC = () => {
           </div>
 
           {room.revealed && room.stats && (
-            <div className="stats-section">
+            <div className="stats-section" ref={statsRef}>
               <h3>Statistics</h3>
               <div className="stats">
                 <div className="stat-item">

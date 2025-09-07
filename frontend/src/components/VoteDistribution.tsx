@@ -77,7 +77,7 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
           <h3>Vote Distribution</h3>
           <div className="inline-stats">
             <span className="stat-mini">
-              <span className="stat-value">{totalVotes}</span> votes
+              <span className="stat-value">{totalVotes}</span> {totalVotes === 1?'vote':'votes'}
             </span>
             {average > 0 && (
               <span className="stat-mini">
@@ -85,7 +85,7 @@ const VoteDistribution: React.FC<VoteDistributionProps> = ({ distribution, total
               </span>
             )}
             <span className="stat-mini">
-              <span className="stat-value">{mode}</span> most voted
+              <span className="stat-value">{mode}</span> has most votes
             </span>
           </div>
         </div>
